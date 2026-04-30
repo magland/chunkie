@@ -104,10 +104,6 @@ function [sysmat,varargout] = chunkermat(chnkobj,kern,opts,ilist)
 % opts.sing provides a default value for singularities if not 
 % defined for kernels
 
-disp('test 1');
-pause(1);
-
-
 % Flag for determining whether input object is a chunkergraph
 icgrph = 0;
 
@@ -122,9 +118,6 @@ else
     msg = "CHUNKERMAT: first input is not a chunker or chunkgraph object";
     error(msg)
 end
-
-disp('test 2');
-pause(1);
 
 if ~isa(kern,'kernel')
     try 
@@ -154,9 +147,6 @@ adaptive_correction = false;
 rcip_adaptive_correction = false;
 sing = 'log';
 
-disp('test 3');
-pause(1);
-
 % get opts from struct if available
 
 if isfield(opts,'quad')
@@ -178,9 +168,6 @@ if corrections
     nonsmoothonly = true;
 end
 
-disp('test 4');
-pause(1);
-
 if(isfield(opts,'rcip'))
     isrcip = opts.rcip;
 end
@@ -195,9 +182,6 @@ if(isfield(opts,'rcip_ignore'))
     end
 end
 
-disp('test 5');
-pause(1);
-
 if(isfield(opts,'nsub_or_tol'))
     if(opts.nsub_or_tol <1)
         tol = opts.nsub_or_tol;
@@ -207,9 +191,6 @@ if(isfield(opts,'nsub_or_tol'))
     end
 end
 
-disp('test 6');
-pause(1);
-
 if (isfield(opts,'adaptive_correction'))
     adaptive_correction = opts.adaptive_correction;
 end
@@ -217,18 +198,12 @@ if (isfield(opts,'rcip_adaptive_correction'))
     rcip_adaptive_correction = opts.rcip_adaptive_correction;
 end
 
-disp('test 7');
-pause(1);
-
 nchunkers = length(chnkrs);
 
 opdims_mat = zeros(2,nchunkers,nchunkers);
 lchunks    = zeros(nchunkers,1);
 
 %TODO: figure out a way to avoid this nchunkers^2 loop
-
-disp('test 8');
-pause(1);
 
 for i=1:nchunkers
     
@@ -268,10 +243,6 @@ icollocs = zeros(nchunkers+1,1);
 idrowchnk = zeros(2,npttot);
 idcolchnk = zeros(2,npttot);
 
-disp('test 9');
-pause(1);
-
-
 irowlocs(1) = 1;
 icollocs(1) = 1;
 for i=1:nchunkers
@@ -303,11 +274,7 @@ else
     vsysmat = [];
 end
 
-disp('test 10');
-pause(1);
-
-
-%% Off diagonal interactions 
+%% Off diagonal interactions
 
 %TODO: switch to flagging for all chunks at once, then loop over
 % chunks and do corrections. need to create array from chunk/point index
@@ -380,10 +347,17 @@ end
 disp('test 11');
 pause(1);
 
-%% Diagonal Interaction. 
+%% Diagonal Interaction.
+
+disp('test 12: entering diagonal interaction loop');
+fprintf('  nchunkers = %d\n', nchunkers);
+pause(1);
 
 for i=1:nchunkers
-    
+
+    fprintf('test 13: diagonal loop iteration i = %d / %d\n', i, nchunkers);
+    pause(1);
+
     opdims = reshape(opdims_mat(:,i,i),[2,1]);
     jlist = [];
     if ~isempty(ilist)
@@ -398,15 +372,16 @@ for i=1:nchunkers
             singi = kern.sing;
         end
     else
-        
+
         ftmp = kern(i,i).eval;
         if ~isempty(kern(i,i).sing)
             singi = kern(i,i).sing;
         end
-    end 
+    end
 
-    
-    
+    fprintf('test 14: i=%d, kernel/singularity resolved, singi = %s\n', i, singi);
+    pause(1);
+
     % call requested routine
 
     if strcmpi(quad,'ggq')
@@ -457,25 +432,39 @@ for i=1:nchunkers
                 opts.auxquads.ggqhs = auxquads;
             end
         end
+        fprintf('test 15: i=%d, auxquads ready, type = %s\n', i, type);
+        pause(1);
         if nonsmoothonly
+            fprintf('test 16: i=%d, calling chnk.quadggq.buildmattd\n', i);
+            pause(1);
             sysmat_tmp = chnk.quadggq.buildmattd(chnkr,ftmp,opdims,type,auxquads,jlist,corrections);
         else
+            fprintf('test 16: i=%d, calling chnk.quadggq.buildmat\n', i);
+            pause(1);
             sysmat_tmp = chnk.quadggq.buildmat(chnkr,ftmp,opdims,type,auxquads,jlist);
         end
+        fprintf('test 17: i=%d, ggq buildmat returned\n', i);
+        pause(1);
 
     elseif strcmpi(quad,'native')
 
+        fprintf('test 15: i=%d, using native quadrature\n', i);
+        pause(1);
         if nonsmoothonly
             sysmat_tmp = sparse(chnkr.npt,chnkr.npt);
         else
             sysmat_tmp = chnk.quadnative.buildmat(chnkr,ftmp,opdims);
         end
+        fprintf('test 17: i=%d, native buildmat returned\n', i);
+        pause(1);
     else
         warning('specified quadrature method not available');
         return;
     end
 
     if adaptive_correction
+        fprintf('test 18: i=%d, doing adaptive correction\n', i);
+        pause(1);
         flag = flagnear(chnkr,chnkr.r(:,:));
 
         % mark off the near and self interactions
@@ -486,7 +475,7 @@ for i=1:nchunkers
                 flag((jch - 1)*chnkr.k+(1:chnkr.k), ich) = 0;
             end
         end
-        
+
         sysmat_tmp_adap = chunkermat_adap(chnkr, ftmp, opdims, chnkr, ...
            flag,opts,corrections);
 
@@ -494,6 +483,8 @@ for i=1:nchunkers
 
         ijsys = isys + (jsys-1)*size(sysmat_tmp_adap,1);
         sysmat_tmp(ijsys) = vsys(:);
+        fprintf('test 19: i=%d, adaptive correction done\n', i);
+        pause(1);
     end
 
     if l2scale
@@ -513,12 +504,17 @@ for i=1:nchunkers
         isysmat = [isysmat;isys+irowlocs(i)-1];
         jsysmat = [jsysmat;jsys+icollocs(i)-1];
         vsysmat = [vsysmat;vsys];
-    end    
+    end
+    fprintf('test 20: i=%d, diagonal block assigned\n', i);
+    pause(1);
 end
 
-
+disp('test 21: diagonal interaction loop complete');
+pause(1);
 
 if(icgrph && isrcip)
+    disp('test 22: entering rcip block');
+    pause(1);
     [sbclmat,sbcrmat,lvmat,rvmat,u] = chnk.rcip.shiftedlegbasismats(k);
     nch_all = horzcat(chnkobj.echnks.nch);
     npt_all = horzcat(chnkobj.echnks.npt);
@@ -526,8 +522,13 @@ if(icgrph && isrcip)
     ngl = chnkrs(1).k;
 
     rcipsav = cell(nv,1);
-    
+
+    fprintf('test 23: rcip setup done, nv = %d\n', nv);
+    pause(1);
+
     for ivert=setdiff(1:nv,rcip_ignore)
+        fprintf('test 24: rcip vertex loop ivert = %d\n', ivert);
+        pause(1);
         clist = chnkobj.vstruc{ivert}{1};
         isstart = chnkobj.vstruc{ivert}{2};
         isstart(isstart==1) = 0;
@@ -567,6 +568,8 @@ if(icgrph && isrcip)
             end
         end
         
+        fprintf('test 25: ivert=%d, calling chnk.rcip.setup\n', ivert);
+        pause(1);
         [Pbc,PWbc,starL,circL,starS,circS,ilist,starL1,circL1] = ...
             chnk.rcip.setup(ngl,ndim,nedge,isstart);
         optsrcip = opts;
@@ -575,20 +578,27 @@ if(icgrph && isrcip)
         optsrcip.rcip_savedepth = rcip_savedepth;
         optsrcip.adaptive_correction = rcip_adaptive_correction;
 
-
+        fprintf('test 26: ivert=%d, calling chnk.rcip.Rcompchunk\n', ivert);
+        pause(1);
         [R,rcipsav{ivert}] = chnk.rcip.Rcompchunk(chnkrs,iedgechunks,kern,ndim,chnkobj.verts(:,ivert), ...
-            Pbc,PWbc,nsub,starL,circL,starS,circS,ilist,starL1,circL1,... 
+            Pbc,PWbc,nsub,starL,circL,starS,circS,ilist,starL1,circL1,...
             sbclmat,sbcrmat,lvmat,rvmat,u,optsrcip);
+        fprintf('test 27: ivert=%d, Rcompchunk returned\n', ivert);
+        pause(1);
 
         rcipsav{ivert}.starind = starind;
 
         sysmat_tmp = inv(R) - eye(2*ngl*nedge*ndim);
+        fprintf('test 28: ivert=%d, computed inv(R)\n', ivert);
+        pause(1);
         if (~nonsmoothonly)
-            
+
             sysmat(starind,starind) = sysmat_tmp;
         else
 
             if corrections
+                fprintf('test 29: ivert=%d, computing corrections\n', ivert);
+                pause(1);
                 cormat = zeros(size(sysmat_tmp));
                 jstart = 1;
                 for jj = 1:nedge
@@ -633,24 +643,33 @@ if(icgrph && isrcip)
             end
                        
             [jind,iind] = meshgrid(starind);
-            
+
             isysmat = [isysmat;iind(:)];
             jsysmat = [jsysmat;jind(:)];
             vsysmat = [vsysmat;sysmat_tmp(:)];
-        end    
+        end
+        fprintf('test 30: ivert=%d, rcip vertex done\n', ivert);
+        pause(1);
     end
+
+    disp('test 31: rcip vertex loop complete');
+    pause(1);
 
     if nargout > 2
         varargout{2} = rcipsav;
     end
 
-    
+
 end
 
 
+disp('test 32: post-rcip block');
+pause(1);
 
 
 if (nonsmoothonly)
+    disp('test 33: doing nonsmoothonly sparse fix');
+    pause(1);
     % Fix sparse entry format to use rcip matrix entries for repeats
     % instead of using the precomputed self correction
     
@@ -658,12 +677,17 @@ if (nonsmoothonly)
     [~,idx] = unique(ijind, 'rows','last');
     
     sysmat = sparse(isysmat(idx),jsysmat(idx),vsysmat(idx),nrows,ncols);
+    disp('test 34: sparse fix complete');
+    pause(1);
 end
 
 
-if (nargout >1) 
+if (nargout >1)
 	varargout{1} = opts;
-end  
+end
+
+disp('test 35: chunkermat returning');
+pause(1);
 
 end
 
