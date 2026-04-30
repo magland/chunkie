@@ -104,6 +104,9 @@ function [sysmat,varargout] = chunkermat(chnkobj,kern,opts,ilist)
 % opts.sing provides a default value for singularities if not 
 % defined for kernels
 
+disp('test 1');
+pause(1);
+
 
 % Flag for determining whether input object is a chunkergraph
 icgrph = 0;
@@ -119,6 +122,9 @@ else
     msg = "CHUNKERMAT: first input is not a chunker or chunkgraph object";
     error(msg)
 end
+
+disp('test 2');
+pause(1);
 
 if ~isa(kern,'kernel')
     try 
@@ -148,6 +154,9 @@ adaptive_correction = false;
 rcip_adaptive_correction = false;
 sing = 'log';
 
+disp('test 3');
+pause(1);
+
 % get opts from struct if available
 
 if isfield(opts,'quad')
@@ -169,6 +178,9 @@ if corrections
     nonsmoothonly = true;
 end
 
+disp('test 4');
+pause(1);
+
 if(isfield(opts,'rcip'))
     isrcip = opts.rcip;
 end
@@ -183,6 +195,9 @@ if(isfield(opts,'rcip_ignore'))
     end
 end
 
+disp('test 5');
+pause(1);
+
 if(isfield(opts,'nsub_or_tol'))
     if(opts.nsub_or_tol <1)
         tol = opts.nsub_or_tol;
@@ -192,6 +207,9 @@ if(isfield(opts,'nsub_or_tol'))
     end
 end
 
+disp('test 6');
+pause(1);
+
 if (isfield(opts,'adaptive_correction'))
     adaptive_correction = opts.adaptive_correction;
 end
@@ -199,12 +217,18 @@ if (isfield(opts,'rcip_adaptive_correction'))
     rcip_adaptive_correction = opts.rcip_adaptive_correction;
 end
 
+disp('test 7');
+pause(1);
+
 nchunkers = length(chnkrs);
 
 opdims_mat = zeros(2,nchunkers,nchunkers);
 lchunks    = zeros(nchunkers,1);
 
 %TODO: figure out a way to avoid this nchunkers^2 loop
+
+disp('test 8');
+pause(1);
 
 for i=1:nchunkers
     
@@ -244,6 +268,9 @@ icollocs = zeros(nchunkers+1,1);
 idrowchnk = zeros(2,npttot);
 idcolchnk = zeros(2,npttot);
 
+disp('test 9');
+pause(1);
+
 
 irowlocs(1) = 1;
 icollocs(1) = 1;
@@ -275,6 +302,9 @@ else
     jsysmat = [];
     vsysmat = [];
 end
+
+disp('test 10');
+pause(1);
 
 
 %% Off diagonal interactions 
@@ -346,6 +376,9 @@ for i = 1:nchunkers
         end
     end
 end
+
+disp('test 11');
+pause(1);
 
 %% Diagonal Interaction. 
 
